@@ -8,7 +8,7 @@
 
 //For Xbox controller with USB shield
 #include <Servo.h>
-#include <XBOXRECV.h>
+#include <XBOXONE.h>
 
 //Other Includes for USB shield
 #ifdef dobogusinclude
@@ -53,7 +53,7 @@ Servo topRollerMotor; //Create the topRollerMotor object for the servo library
 
 const int bottomRollerPin = 30; //Bottom Roller Motor pin
 //1460 for no running motors, no buttons held.
-//1600 for low power, "X" button held.
+//1600 for low power, "X" button held.Xbox360Connected
 //1800 for medium power, "A" button held.
 //2000 for high power, "B" button held.
 int bottomRollerSpeed = 1500; //Top Roller Motor starting speed
@@ -101,12 +101,13 @@ bool demoShooterLoop = false;
 
 //Initialization for USB shield
 USB Usb;
-XBOXRECV Xbox(&Usb);
+XBOXONE Xbox(&Usb);
 
 void setup()
 {
   //Initialize USB shield
   Usb.Init();
+  
   //Wait for initialization before continueing
   delay(1000);
 
@@ -125,7 +126,7 @@ void setup()
   pinMode(demoToggleSwitch, INPUT_PULLUP);
 
   Serial.begin(2000000);
-
+  Serial.println("init");
   //Wait for USB and other setup to finish. This delay is probably not necessary.
   delay(1000);
 }
@@ -148,11 +149,11 @@ void stopMotors()
 void loop()
 {
   demo = digitalRead(demoToggleSwitch);
-  //Serial.println(demo);
+  Serial.println("in loop");
     Usb.Task();
-    if (Xbox.XboxReceiverConnected) {
+    if (Xbox.XboxOneConnected) {
       //This if statement makes sure that the motors will run only when the controller is connected. The motors will stop running when the controller is disconnected. This is the only way to disable the system other than cutting power.
-      if (Xbox.Xbox360Connected[controlNum]) {
+      if (Xbox.XboxOneConnected) {
 
         //We start by saying we are not shooting, driving, or collecting
         driving = false;
@@ -169,11 +170,11 @@ void loop()
         int rightHatXValPre = 0;
 
         //Grabs the xbox controller left analog stick data once, done here once to save cpu cycles
-        int xboxLeftHatXData = Xbox.getAnalogHat(LeftHatX, controlNum);
-        int xboxLeftHatYData = Xbox.getAnalogHat(LeftHatY, controlNum);
+        int xboxLeftHatXData = Xbox.getAnalogHat(LeftHatX);
+        int xboxLeftHatYData = Xbox.getAnalogHat(LeftHatY);
 
         //Grabs the xbox controller right analog stick data once, done here once to save cpu cycles
-        int xboxRightHatXData = Xbox.getAnalogHat(RightHatX, controlNum);
+        int xboxRightHatXData = Xbox.getAnalogHat(RightHatX);
 
         //This is deadzone detection on the joystick because the resting position of the joystick varries
         if (xboxLeftHatXData > joystickDeadzone || xboxLeftHatXData < -joystickDeadzone) {
@@ -200,7 +201,7 @@ void loop()
         //1800 for medium power, "A" button held.
         //2000 for high power, "B" button held.
         //topRollerSpeed and bottomRollerSpeed are set opposite because the shooter needs to spin rollers the opposite direction to pull the ball out
-        if ((Xbox.getButtonPress(X, controlNum))) {
+        if ((Xbox.getButtonPress(X))) {
           if (demo) {
           topRollerSpeed = 1400;
           bottomRollerSpeed = 1600;
@@ -212,7 +213,7 @@ void loop()
           shooting = true;
           //Serial.println("X button is being held");
         }
-        else if ((Xbox.getButtonPress(A, controlNum))) {
+        else if ((Xbox.getButtonPress(A))) {
           if (demo) {
           topRollerSpeed = 1325;
           bottomRollerSpeed = 1625;
@@ -224,7 +225,7 @@ void loop()
           shooting = true;
           //Serial.println("A button is being held");
         }
-        else if ((Xbox.getButtonPress(B, controlNum))) {
+        else if ((Xbox.getButtonPress(B))) {
           if (demo) {
           topRollerSpeed = 1325;
           bottomRollerSpeed = 1615;
@@ -243,7 +244,7 @@ void loop()
           //Serial.println("No Shooter buttons are being held");
         }
 
-        if (Xbox.getButtonPress(R1, controlNum)) {
+        if (Xbox.getButtonPress(R1)) {
           if (demo) {
           collectorSpeed = 1775;
           }
@@ -252,7 +253,7 @@ void loop()
           }
           collecting = true;
         }
-        else if (Xbox.getButtonPress(L1, controlNum)) {
+        else if (Xbox.getButtonPress(L1)) {
           if (demo) {
           collectorSpeed = 1225;
           }
@@ -266,15 +267,15 @@ void loop()
           collecting = false;
         }
 
-        if (Xbox.getButtonPress(L2, controlNum)) {
-          bottomRollerSpeed -= Xbox.getButtonPress(L2, controlNum);
+        if (Xbox.getButtonPress(L2)) {
+          bottomRollerSpeed -= Xbox.getButtonPress(L2);
         }
 
-        if (Xbox.getButtonPress(R2, controlNum)) {
-          topRollerSpeed += Xbox.getButtonPress(R2, controlNum);
+        if (Xbox.getButtonPress(R2)) {
+          topRollerSpeed += Xbox.getButtonPress(R2);
         }
 
-        if (Xbox.getButtonPress(START, controlNum)) {
+        if (Xbox.getButtonPress(START)) {
           if (demoShooterLoop == false) {
             demoShooterLoop = true;
           }
@@ -296,7 +297,7 @@ void loop()
         //Convert the joystick values for the turret. We only use the X axis of the joystick because the turret only turns left and right
         turretJoyX = map(rightHatXValPre, -32768, 32768, 1000, 2000);
 
-        if (Xbox.getButtonPress(BACK, controlNum)) {
+        if (Xbox.getButtonPress(BACK)) {
           demoShooterLoop = false;
         }
         

@@ -1,0 +1,6 @@
+{
+    "board": "arduino:avr:uno",
+    "programmer": "arduino:avrispmkii",
+    "sketch": "Benjy/Benjy.ino",
+    "port": "/dev/ttyACM0"
+}
